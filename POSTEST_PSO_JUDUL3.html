@@ -670,20 +670,14 @@ function startState(){
  };
 }
 
-let state;
-try{
- state=JSON.parse(localStorage.getItem(STORAGE))||startState();
- if(!state.fs||!state.users||!state.groups||typeof state.level!=='number') state=startState();
- if(state.level>=TOTAL||state.timeUp||(state.started&&state.deadline&&Date.now()>=state.deadline)){
-  localStorage.removeItem(STORAGE);
-  state=startState();
- }
-}catch{
- state=startState();
-}
+// Sesi TIDAK dilanjutkan: setiap refresh / buka ulang halaman selalu mulai dari awal.
+let state=startState();
+try{localStorage.removeItem(STORAGE);}catch(e){}
+// Halaman yang dipulihkan dari cache (tombol back / kembali ke aplikasi) juga dimuat ulang dari awal.
+window.addEventListener('pageshow',e=>{if(e.persisted)location.reload();});
 
 let historyIndex=state.history.length;
-function persist(){try{localStorage.setItem(STORAGE,JSON.stringify(state));}catch(e){}}
+function persist(){/* progres tidak disimpan: refresh = mulai ulang */}
 function formatTimer(ms){ms=Math.max(0,ms);const sec=Math.ceil(ms/1000);return String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0');}
 
 function finishByTimeout(){
