@@ -203,6 +203,21 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 </head>
 <body>
 
+<!-- MODAL 0: KODE AKSES -->
+<div class="modal-overlay" id="modal-access">
+  <div class="modal-card" id="access-card">
+    <span class="lvl-tag" style="margin-bottom:12px;display:inline-block">KODE AKSES</span>
+    <h2>Masukkan Kode Akses</h2>
+    <p>Halaman POSTEST ini hanya dapat dibuka dengan kode akses dari asisten/dosen.</p>
+    <div class="form-group">
+      <label for="input-access">Kode Akses:</label>
+      <input type="text" id="input-access" placeholder="Masukkan kode akses" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    </div>
+    <div id="access-error" style="color:var(--red);font-size:12.5px;min-height:18px;margin:-4px 0 10px;font-weight:600"></div>
+    <button class="btn btn-primary" id="btn-access" style="width:100%;justify-content:center">Buka Akses →</button>
+  </div>
+</div>
+
 <!-- MODAL 1: INPUT NAMA, NPM, & KELAS -->
 <div class="modal-overlay" id="modal-user">
   <div class="modal-card">
@@ -242,7 +257,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
     <span class="lvl-tag" style="margin-bottom:12px;display:inline-block">PETUNJUK</span>
     <h2>Aturan Pengerjaan</h2>
     <ul class="rule-list">
-      <li><b>1.</b> Selesaikan 4 Level secara berurutan.</li>
+      <li><b>1.</b> Selesaikan 3 Level secara berurutan.</li>
       <li><b>2.</b> Ketik perintah simulasi Linux di terminal lalu tekan Enter.</li>
       <li><b>3.</b> Selesaikan tugas secara berurutan; level akan berlanjut otomatis setelah tugas terakhir tuntas.</li>
       <li><b>4.</b> Menggunakan Hint akan memotong <b style="white-space: nowrap;">-5 Poin</b> pada setiap soal yang dibuka hint-nya.</li>
@@ -290,7 +305,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
       <!-- Mission HUD Card -->
       <div class="hud-card">
         <div class="hud-top">
-          <span class="lvl-tag" id="hud-level-badge">LEVEL 01 / 04</span>
+          <span class="lvl-tag" id="hud-level-badge">LEVEL 01 / 03</span>
           <span class="pts-tag" id="hud-score-badge">SKOR: 0 / 100</span>
         </div>
         <h2 class="hud-title" id="hud-title">Memuat Level...</h2>
@@ -403,9 +418,10 @@ const fxSuccess=()=>{playTone(440,'sine',0.1);setTimeout(()=>playTone(554,'sine'
 document.addEventListener('click',()=>{if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();},{once:true});
 
 const STORAGE='linux-user-group-access-postest-v4-4level';
+const ACCESS_CODES=['SO3A','SO3B','SO3C','SO3D','SO3E'];
 const HOME='/home/praktikan';
-const POINTS=[25,25,25,25];
-const PRAISES=['NICE!','GOOD JOB!','EXCELLENT!','AWESOME!'];
+const POINTS=[33,33,34];
+const PRAISES=['NICE!','GOOD JOB!','EXCELLENT!'];
 
 const G=x=>`<span class="ic-subdir">${x}</span>`;
 const U=x=>`<span class="ic-file">${x}</span>`;
@@ -449,8 +465,8 @@ const levels=[
     `2. Atur owner file menjadi ${U('andi')} dan group menjadi ${G('akademik')}.`,
     `3. Atur permission (mode oktal): owner baca-tulis (rw-), group hanya baca (r--), others tanpa akses (---).`,
     `4. Periksa permission dan ownership file dengan long listing.`,
-    `5. Beralih ke akun ${U('budi')}, uji baca file (harus berhasil), lalu keluar.`,
-    `6. Beralih ke akun ${U('citra')}, uji baca file (harus ditolak), lalu keluar.`,
+    `5. Beralih ke akun ${U('budi')}, uji baca file dengan path lengkap (harus berhasil), lalu keluar.`,
+    `6. Beralih ke akun ${U('citra')}, uji baca file dengan path lengkap (harus ditolak), lalu keluar.`,
     `7. Amati perbedaan hasil pengujian, dan pastikan kamu kembali ke sesi ${U('root')} (prompt berakhiran #).`)
   ],
   hints:[
@@ -589,71 +605,6 @@ const levels=[
       `• Gunakan ${C('su - username')} dan ${C('cat file')} untuk pengujian.`,
       `• Permission direktori harus memungkinkan pengguna mencapai file.`)
   ]
- },
- /* ===================== LEVEL 4 ===================== */
- {
-  title:'Audit dan Penanganan Masalah Akses Server Kampus',
-  description:'Tim audit teknologi informasi kampus menemukan beberapa masalah pada server. Ada pengguna yang tidak dapat membaca file meskipun sudah menjadi anggota group yang benar, dan ada dokumen yang dapat dibaca oleh pengguna yang tidak berwenang. Kamu berperan sebagai administrator yang membangun group dan user, memeriksa keanggotaan, lalu memperbaiki konfigurasi akses berdasarkan hasil audit.',
-  goals:[
-   BR('<b>Tahap 1 — Menambah Group untuk User</b> (Percobaan 3.3.1)',
-    `Buat empat group untuk unit pengelola server kampus:`,
-    `${IN}${G('audit_akademik')} (Akademik)`,
-    `${IN}${G('audit_keuangan')} (Keuangan)`,
-    `${IN}${G('audit_lab')} (Laboratorium)`,
-    `${IN}${G('audit_it')} (Teknologi Informasi)`,
-    `1. Buat keempat group.`,
-    `2. Periksa keberadaan masing-masing group.`,
-    `3. Tampilkan GID setiap group.`,
-    `4. Pastikan tidak ada group yang gagal dibuat.`),
-   BR('<b>Tahap 2 — Menambah User dan Memasukkan ke dalam Group</b> (Percobaan 3.3.2)',
-    `Buat akun berikut:`,
-    `${IN}${U('audit_andi')} (Akademik) → ${G('audit_akademik')}`,
-    `${IN}${U('audit_bela')} (Keuangan) → ${G('audit_keuangan')}`,
-    `${IN}${U('audit_candra')} (Laboratorium) → ${G('audit_lab')}`,
-    `${IN}${U('audit_dimas')} (Teknologi Informasi) → ${G('audit_it')}`,
-    `${IN}${U('kepala_it')} (Administrator audit) → ${G('audit_it')}`,
-    `1. Buat seluruh user dengan home directory.`,
-    `2. Masukkan setiap user ke group sesuai daftar.`,
-    `3. Atur password setiap user.`,
-    `4. Pastikan setiap akun berhasil dibuat dan terdaftar.`),
-   BR('<b>Tahap 3 — Melihat Informasi Group dari User</b> (Percobaan 3.3.3)',
-    `Sebelum memperbaiki server, pastikan keanggotaan pengguna: ${U('audit_andi')}, ${U('audit_bela')}, ${U('audit_candra')}, ${U('audit_dimas')}, dan ${U('kepala_it')}.`,
-    `1. Periksa group masing-masing user.`,
-    `2. Tampilkan UID, GID, dan group masing-masing user.`,
-    `3. Periksa entri masing-masing user di ${D('/etc/group')}.`,
-    `4. Temukan apakah ada user yang terdaftar pada group yang tidak sesuai dengan unitnya.`),
-   BR('<b>Tahap 4 — Melakukan Manipulasi Izin Akses</b> (Percobaan 3.3.4)',
-    `Buat struktur ${D('/srv/audit_kampus/')} dengan ketentuan berikut (isi setiap file dengan data contoh):`,
-    `${IN}${D('akademik/')}${U('data_mahasiswa.txt')} → ${U('audit_andi')}:${G('audit_akademik')}, 640`,
-    `${IN}${D('keuangan/')}${U('laporan_ukt.txt')} → ${U('audit_bela')}:${G('audit_keuangan')}, 600`,
-    `${IN}${D('laboratorium/')}${U('inventaris_lab.txt')} → ${U('audit_candra')}:${G('audit_lab')}, 640`,
-    `${IN}${D('sistem/')}${U('konfigurasi_server.conf')} → ${U('audit_dimas')}:${G('audit_it')}, 640`,
-    `1. Buat seluruh direktori dan file, isi data contoh, atur owner/group, lalu terapkan permission sesuai daftar.`,
-    `2. Periksa permission dan ownership semua file (long listing).`,
-    `3. Uji baca: ${U('audit_andi')} → data_mahasiswa (berhasil), ${U('audit_bela')} → data_mahasiswa (ditolak), ${U('audit_bela')} → laporan_ukt (berhasil), ${U('audit_dimas')} → konfigurasi_server.conf (berhasil).`,
-    `4. Simulasikan masalah 1: ubah permission direktori ${D('/srv/audit_kampus/sistem')} (misalnya mode 700) lalu uji ${U('kepala_it')} (anggota group ${G('audit_it')}) membaca konfigurasi_server.conf sampai ditolak. Temukan penyebabnya dengan ${C('ls -ld')} dan perbaiki permission direktori tanpa memberi akses berlebihan (bukan 777).`,
-    `5. Simulasikan masalah 2: ubah permission laporan_ukt.txt menjadi terlalu terbuka (misalnya 644), buktikan ${U('audit_andi')} dapat membacanya, lalu perbaiki agar hanya pemilik yang dapat membaca dan menulis.`,
-    `6. Ulangi pemeriksaan (long listing semua file dan ${C('ls -ld')} direktori sistem) dan pengujian: ${U('kepala_it')} → konfigurasi_server.conf (berhasil), ${U('audit_andi')} → laporan_ukt (ditolak). Buat kesimpulan audit, lalu kembali ke sesi ${U('root')}.`)
-  ],
-  hints:[
-   BR(`• Gunakan ${C('groupadd')}.`,
-      `• Gunakan ${C('getent group')}.`,
-      `• Gunakan ${C('grep')} pada ${C('/etc/group')} untuk pencarian spesifik.`),
-   BR(`• Gunakan ${C('useradd -m -G group username')}.`,
-      `• Gunakan ${C('passwd username')}.`,
-      `• Pastikan group telah dibuat pada Tahap 1.`),
-   BR(`• Gunakan ${C('groups username')}.`,
-      `• Gunakan ${C('id username')}.`,
-      `• Gunakan ${C('grep username /etc/group')}.`,
-      `• Bandingkan hasil dengan daftar penugasan user.`),
-   BR(`• Gunakan ${C('mkdir -p')}, ${C('touch')}, ${C('echo')}, ${C('chown')}, ${C('chmod')}, dan ${C('ls -l')}.`,
-      `• Permission 640 berarti owner rw-, group r--, others ---. Permission 600 berarti owner rw-, group ---, others ---.`,
-      `• Gunakan ${C('ls -ld')} untuk memeriksa permission direktori.`,
-      `• Direktori membutuhkan permission x agar pengguna dapat menelusurinya.`,
-      `• Gunakan ${C('su - username')} untuk berpindah akun dan ${C('cat file')} untuk menguji baca.`,
-      `• Jangan menggunakan ${C('chmod 777')} sebagai solusi.`,
-      `• Setelah perbaikan, ulangi pengujian dengan akun yang sama agar hasil sebelum dan sesudah dapat dibandingkan.`)
-  ]
  }
 ];
 const TOTAL=levels.length;
@@ -678,16 +629,7 @@ const TREES=[
   '/srv/sia/',
   '├── akademik/data_mahasiswa.txt  operator_sia:sia_akademik  rw- r-- ---',
   '├── aplikasi/config_sia.conf     developer1:sia_developer   rw- r-- ---',
-  '└── database/backup_sia.sql      dba1:sia_database          rw- --- ---'],
- ['KONTEKS: AUDIT AKSES SERVER KAMPUS',
-  'Group : audit_akademik | audit_keuangan | audit_lab | audit_it',
-  'User  : audit_andi, audit_bela, audit_candra, audit_dimas, kepala_it',
-  '        (audit_dimas dan kepala_it -> audit_it)',
-  '/srv/audit_kampus/',
-  '├── akademik/data_mahasiswa.txt          audit_andi:audit_akademik   640',
-  '├── keuangan/laporan_ukt.txt             audit_bela:audit_keuangan   600',
-  '├── laboratorium/inventaris_lab.txt      audit_candra:audit_lab      640',
-  '└── sistem/konfigurasi_server.conf       audit_dimas:audit_it        640']
+  '└── database/backup_sia.sql      dba1:sia_database          rw- --- ---']
 ];
 
 const el=id=>document.getElementById(id);
@@ -698,6 +640,7 @@ function startState(){
  return {
   level:0,
   taskIndex:0,
+  unlocked:false,
   name:'',
   npm:'',
   kelas:'',
@@ -863,8 +806,8 @@ function command(raw){
  case 'touch':{if(!ensureRoot())break;for(const x of a){const p=norm(x);if(!isDir(parent(p))){err('touch: direktori induk tidak ditemukan');continue;}if(!state.fs[p])state.fs[p]={kind:'file',owner:'root',group:'root',mode:0o644,content:''};out('File dibuat: '+x,'ok');}}break;
  case 'chown':{if(!ensureRoot())break;const m=(a[0]||'').split(':'),path=norm(a[1]||'');if(!state.users[m[0]]||!state.groups[m[1]]){err('chown: user atau group tidak ditemukan');break;}if(!state.fs[path]){err('chown: file/direktori tidak ditemukan');break;}state.fs[path].owner=m[0];state.fs[path].group=m[1];out(`Kepemilikan ${a[1]} diubah menjadi ${m[0]}:${m[1]}.`,'ok');}break;
  case 'chgrp':{if(!ensureRoot())break;const group=a[0],path=norm(a[1]||'');if(!state.groups[group]||!state.fs[path]){err('chgrp: group atau file/direktori tidak ditemukan');break;}state.fs[path].group=group;out(`Group ${a[1]} diubah menjadi ${group}.`,'ok');}break;
- case 'chmod':{if(!ensureRoot())break;const mode=a[0],path=norm(a[1]||''),o=state.fs[path];if(!o){err('chmod: file/direktori tidak ditemukan');break;}if(/^\d{3,4}$/.test(mode)){o.mode=parseInt(mode,8);delete state.audit['ls|'+path];out(`Mode ${mode} diterapkan pada ${a[1]}.`,'ok');}else if(/^[ugo]?([+-=])[rwx]+$/.test(mode)){const m=mode.match(/^([ugo]?)([+-=])([rwx]+)$/),classes=m[1]||'ugo',op=m[2],map={u:0,g:1,o:2};let vals=modeBits(o.mode);for(const c of classes){const idx=map[c];let v=0;for(const ch of m[3])v|={r:4,w:2,x:1}[ch];vals[idx]=op==='+'?(vals[idx]|v):op==='-'?(vals[idx]&~v):v;}o.mode=vals[0]*64+vals[1]*8+vals[2];delete state.audit['ls|'+path];out(`Permission ${mode} diterapkan pada ${a[1]}.`,'ok');}else err('Format chmod: chmod 664 FILE atau chmod +r FILE');}break;
- case 'ls':{let long=false,dirFlag=false,pathArg='.';for(const x of a){if(x==='-l')long=true;else if(x==='-ld'){long=true;dirFlag=true;}else if(x==='-d'){dirFlag=true;}else if(x.startsWith('-')){}else pathArg=x;}const p=norm(pathArg);if(dirFlag){if(!state.fs[p]){err('ls: tidak ditemukan');break;}const o=state.fs[p];out(`${permString(o.mode,o.kind)} 1 ${o.owner} ${o.group} ${o.kind==='dir'?'4096':(o.content||'').length} ${p}`,'ok');state.audit['ls|'+p]=true;}else {printLs(p,long,false);if(long&&state.fs[p]){if(isFile(p))state.audit['ls|'+p]=true;else Object.keys(state.fs).filter(k=>k!==p&&parent(k)===p).forEach(k=>{state.audit['ls|'+k]=true;});}}}break;
+ case 'chmod':{if(!ensureRoot())break;const mode=a[0],path=norm(a[1]||''),o=state.fs[path];if(!o){err('chmod: file/direktori tidak ditemukan');break;}if(/^\d{3,4}$/.test(mode)){o.mode=parseInt(mode,8);out(`Mode ${mode} diterapkan pada ${a[1]}.`,'ok');}else if(/^[ugo]?([+-=])[rwx]+$/.test(mode)){const m=mode.match(/^([ugo]?)([+-=])([rwx]+)$/),classes=m[1]||'ugo',op=m[2],map={u:0,g:1,o:2};let vals=modeBits(o.mode);for(const c of classes){const idx=map[c];let v=0;for(const ch of m[3])v|={r:4,w:2,x:1}[ch];vals[idx]=op==='+'?(vals[idx]|v):op==='-'?(vals[idx]&~v):v;}o.mode=vals[0]*64+vals[1]*8+vals[2];out(`Permission ${mode} diterapkan pada ${a[1]}.`,'ok');}else err('Format chmod: chmod 664 FILE atau chmod +r FILE');}break;
+ case 'ls':{let long=false,dirFlag=false,pathArg='.';for(const x of a){if(x.startsWith('-')){if(x.includes('l'))long=true;if(x.includes('d'))dirFlag=true;}else pathArg=x;}const p=norm(pathArg);if(dirFlag){if(!state.fs[p]){err('ls: tidak ditemukan');break;}const o=state.fs[p];out(`${permString(o.mode,o.kind)} 1 ${o.owner} ${o.group} ${o.kind==='dir'?'4096':(o.content||'').length} ${p}`,'ok');state.audit['ls|'+p]=true;}else {printLs(p,long,false);if(long&&state.fs[p]){if(isFile(p))state.audit['ls|'+p]=true;else Object.keys(state.fs).filter(k=>k!==p&&parent(k)===p).forEach(k=>{state.audit['ls|'+k]=true;});}}}break;
  case 'mkdir':{const mp=a.includes('-p'),dirs=a.filter(x=>!x.startsWith('-'));if(!dirs.length){err('Format: mkdir [-p] DIREKTORI');break;}for(const x of dirs){const full=norm(x);if(state.fs[full]){if(mp&&isDir(full))continue;err(`mkdir: cannot create directory '${x}': File exists`);continue;}const chain=[];let cur=full;while(cur!=='/'&&!state.fs[cur]){chain.unshift(cur);cur=parent(cur);}if(chain.length>1&&!mp){err(`mkdir: cannot create directory '${x}': No such file or directory`);continue;}if(!isDir(cur)){err(`mkdir: cannot create directory '${x}': Not a directory`);continue;}if(!canAccessPath(cur,3)||!hasPerm(state.fs[cur],2)){err(`mkdir: cannot create directory '${x}': Permission denied`);continue;}for(const d of chain)state.fs[d]={kind:'dir',owner:state.currentUser,group:user().primary,mode:0o755};out(`Direktori dibuat: ${x}`,'ok');}}break;
  case 'cd':{const p=norm(a[0]||'~');if(!isDir(p)){err('cd: direktori tidak ditemukan');break;}if(!canAccessPath(p,1)){err('cd: Permission denied');break;}state.cwd=p;}break;
  default:err(`Perintah '${cmd}' tidak dikenal atau belum didukung dalam simulasi ini.`);
@@ -880,7 +823,8 @@ function statuses(){
  const all=(kind,names)=>names.every(n=>!!A[kind+'|'+n]);
  const member=(n,gr)=>!!(u[n]&&u[n].supp.length===1&&u[n].supp[0]===gr&&u[n].passwordSet&&fs['/home/'+n]);
  const fileOk=(p,o,gr,m)=>{const f=fs[p];return !!(f&&f.kind==='file'&&f.owner===o&&f.group===gr&&f.mode===m&&(f.content||'').trim().length>0);};
- const textIs=(p,t)=>!!(fs[p]&&fs[p].kind==='file'&&(fs[p].content||'').trim()===t);
+ const nz=x=>String(x||'').toLowerCase().replace(/\s+/g,' ').trim().replace(/\.$/,'');
+ const textIs=(p,t)=>!!(fs[p]&&fs[p].kind==='file'&&nz(fs[p].content)===nz(t));
  const dirOk=p=>!!(fs[p]&&fs[p].kind==='dir');
  const noOtherWrite=p=>!!(fs[p]&&(fs[p].mode&0o002)===0);
  const listed=p=>!!A['ls|'+p];
@@ -894,9 +838,6 @@ function statuses(){
  const K2='/home/rani/kegiatan',F2a=K2+'/daftar_peserta.txt',F2b=K2+'/panduan_sistem.txt',U2=['rani','tono','wawan','yuni'];
  // --- Level 3 ---
  const R3='/srv/sia',D3=R3+'/akademik/data_mahasiswa.txt',C3=R3+'/aplikasi/config_sia.conf',B3=R3+'/database/backup_sia.sql',U3=['admin_sia','operator_sia','developer1','dba1'];
- // --- Level 4 ---
- const R4='/srv/audit_kampus',DM=R4+'/akademik/data_mahasiswa.txt',LU=R4+'/keuangan/laporan_ukt.txt',IL=R4+'/laboratorium/inventaris_lab.txt',KS=R4+'/sistem/konfigurasi_server.conf',U4=['audit_andi','audit_bela','audit_candra','audit_dimas','kepala_it'];
-
  return [
   [ // LEVEL 1
    ver('akademik')&&ver('it_support'),
@@ -928,21 +869,6 @@ function statuses(){
     rd('dba1',C3)==='denied'&&rd('dba1',B3)==='ok'&&rd('dba2',B3)==='denied'&&
     reach('staf_sia',D3)&&!reach('developer1',D3)&&reach('developer1',C3)&&
     !reach('dba1',C3)&&reach('dba1',B3)&&!reach('dba2',B3)&&root
-  ],
-  [ // LEVEL 4
-   ['audit_akademik','audit_keuangan','audit_lab','audit_it'].every(ver),
-   member('audit_andi','audit_akademik')&&member('audit_bela','audit_keuangan')&&member('audit_candra','audit_lab')&&
-    member('audit_dimas','audit_it')&&member('kepala_it','audit_it'),
-   all('groups',U4)&&all('id',U4)&&all('gr',U4),
-   ['akademik','keuangan','laboratorium','sistem'].every(d=>dirOk(R4+'/'+d)&&noOtherWrite(R4+'/'+d))&&
-    fileOk(DM,'audit_andi','audit_akademik',0o640)&&fileOk(LU,'audit_bela','audit_keuangan',0o600)&&
-    fileOk(IL,'audit_candra','audit_lab',0o640)&&fileOk(KS,'audit_dimas','audit_it',0o640)&&
-    listed(DM)&&listed(LU)&&listed(IL)&&listed(KS)&&listed(R4+'/sistem')&&
-    rd('audit_andi',DM)==='ok'&&rd('audit_bela',DM)==='denied'&&rd('audit_bela',LU)==='ok'&&rd('audit_dimas',KS)==='ok'&&
-    !!A['d|kepala_it|'+KS]&&rd('kepala_it',KS)==='ok'&&
-    !!A['k|audit_andi|'+LU]&&rd('audit_andi',LU)==='denied'&&
-    reach('audit_andi',DM)&&!reach('audit_bela',DM)&&reach('audit_bela',LU)&&!reach('audit_andi',LU)&&
-    reach('audit_dimas',KS)&&reach('kepala_it',KS)&&root
   ]
  ].map(x=>x.map(Boolean));
 }
@@ -1057,11 +983,29 @@ function downloadResult(){
 }
 
 function checkModals(){
- if(!state.name||!state.npm||!state.kelas) el('modal-user').classList.add('active');
+ if(!state.unlocked){el('modal-access').classList.add('active');setTimeout(()=>el('input-access').focus(),50);}
+ else if(!state.name||!state.npm||!state.kelas) el('modal-user').classList.add('active');
  else if(!state.started) el('modal-rules').classList.add('active');
  else if(state.timeUp){state.timeUp=false;finishByTimeout();}
  else if(state.level<TOTAL) startCountdown();
 }
+
+function tryAccess(){
+ const code=el('input-access').value.trim().toUpperCase();
+ if(ACCESS_CODES.includes(code)){
+  state.unlocked=true;persist();
+  el('access-error').textContent='';
+  el('modal-access').classList.remove('active');
+  checkModals();
+ }else{
+  el('access-error').textContent='✗ Kode akses salah. Coba lagi.';
+  el('input-access').value='';el('input-access').focus();
+  fxErr();
+  const c=el('access-card');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake');
+ }
+}
+el('btn-access').addEventListener('click',tryAccess);
+el('input-access').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();tryAccess();}});
 
 el('btn-save-user').addEventListener('click',()=>{
  const n=el('input-nama').value.trim(),npm=el('input-npm').value.trim(),k=el('input-kelas').value;
@@ -1102,7 +1046,7 @@ el('btn-download-final').addEventListener('click',downloadResult);
 
 el('btn-reset').addEventListener('click',()=>{
  if(confirm('Reset seluruh sesi post-test dari Level 1?')){
-  const ident={name:state.name,npm:state.npm,kelas:state.kelas,started:true,deadline:Date.now()+TIMER_DURATION,timeUp:false};
+  const ident={unlocked:state.unlocked,name:state.name,npm:state.npm,kelas:state.kelas,started:true,deadline:Date.now()+TIMER_DURATION,timeUp:false};
   state=startState();Object.assign(state,ident);persist();
   el('cmd').disabled=false;historyIndex=0;rebuildLog();
   out('Sesi berhasil direset. Masuk sebagai administrator untuk memulai.','warn');
