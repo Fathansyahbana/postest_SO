@@ -257,7 +257,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
     <span class="lvl-tag" style="margin-bottom:12px;display:inline-block">PETUNJUK</span>
     <h2>Aturan Pengerjaan</h2>
     <ul class="rule-list">
-      <li><b>1.</b> Selesaikan 3 Level secara berurutan.</li>
+      <li><b>1.</b> Selesaikan 4 Level secara berurutan.</li>
       <li><b>2.</b> Ketik perintah simulasi Linux di terminal lalu tekan Enter.</li>
       <li><b>3.</b> Selesaikan tugas secara berurutan; level akan berlanjut otomatis setelah tugas terakhir tuntas.</li>
       <li><b>4.</b> Menggunakan Hint akan memotong <b style="white-space: nowrap;">-5 Poin</b> pada setiap soal yang dibuka hint-nya.</li>
@@ -305,7 +305,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
       <!-- Mission HUD Card -->
       <div class="hud-card">
         <div class="hud-top">
-          <span class="lvl-tag" id="hud-level-badge">LEVEL 01 / 03</span>
+          <span class="lvl-tag" id="hud-level-badge">LEVEL 01 / 04</span>
           <span class="pts-tag" id="hud-score-badge">SKOR: 0 / 100</span>
         </div>
         <h2 class="hud-title" id="hud-title">Memuat Level...</h2>
@@ -420,8 +420,8 @@ document.addEventListener('click',()=>{if(audioCtx&&audioCtx.state==='suspended'
 const STORAGE='linux-user-group-access-postest-v4-4level';
 const ACCESS_CODES=['SO3A','SO3B','SO3C','SO3D','SO3E'];
 const HOME='/home/praktikan';
-const POINTS=[33,33,34];
-const PRAISES=['NICE!','GOOD JOB!','EXCELLENT!'];
+const POINTS=[25,25,25,25];
+const PRAISES=['NICE!','GOOD JOB!','EXCELLENT!','AWESOME!'];
 
 const G=x=>`<span class="ic-subdir">${x}</span>`;
 const U=x=>`<span class="ic-file">${x}</span>`;
@@ -605,6 +605,71 @@ const levels=[
       `• Gunakan ${C('su - username')} dan ${C('cat file')} untuk pengujian.`,
       `• Permission direktori harus memungkinkan pengguna mencapai file.`)
   ]
+ },
+ /* ===================== LEVEL 4 ===================== */
+ {
+  title:'Audit dan Penanganan Masalah Akses Server Kampus',
+  description:'Tim audit teknologi informasi kampus menemukan beberapa masalah pada server. Ada pengguna yang tidak dapat membaca file meskipun sudah menjadi anggota group yang benar, dan ada dokumen yang dapat dibaca oleh pengguna yang tidak berwenang. Kamu berperan sebagai administrator yang membangun group dan user, memeriksa keanggotaan, lalu memperbaiki konfigurasi akses berdasarkan hasil audit.',
+  goals:[
+   BR('<b>Tahap 1 — Menambah Group untuk User</b> (Percobaan 3.3.1)',
+    `Buat empat group untuk unit pengelola server kampus:`,
+    `${IN}${G('audit_akademik')} (Akademik)`,
+    `${IN}${G('audit_keuangan')} (Keuangan)`,
+    `${IN}${G('audit_lab')} (Laboratorium)`,
+    `${IN}${G('audit_it')} (Teknologi Informasi)`,
+    `1. Buat keempat group.`,
+    `2. Periksa keberadaan masing-masing group.`,
+    `3. Tampilkan GID setiap group.`,
+    `4. Pastikan tidak ada group yang gagal dibuat.`),
+   BR('<b>Tahap 2 — Menambah User dan Memasukkan ke dalam Group</b> (Percobaan 3.3.2)',
+    `Buat akun berikut:`,
+    `${IN}${U('audit_andi')} (Akademik) → ${G('audit_akademik')}`,
+    `${IN}${U('audit_bela')} (Keuangan) → ${G('audit_keuangan')}`,
+    `${IN}${U('audit_candra')} (Laboratorium) → ${G('audit_lab')}`,
+    `${IN}${U('audit_dimas')} (Teknologi Informasi) → ${G('audit_it')}`,
+    `${IN}${U('kepala_it')} (Administrator audit) → ${G('audit_it')}`,
+    `1. Buat seluruh user dengan home directory.`,
+    `2. Masukkan setiap user ke group sesuai daftar.`,
+    `3. Atur password setiap user.`,
+    `4. Pastikan setiap akun berhasil dibuat dan terdaftar.`),
+   BR('<b>Tahap 3 — Melihat Informasi Group dari User</b> (Percobaan 3.3.3)',
+    `Sebelum memperbaiki server, pastikan keanggotaan pengguna: ${U('audit_andi')}, ${U('audit_bela')}, ${U('audit_candra')}, ${U('audit_dimas')}, dan ${U('kepala_it')}.`,
+    `1. Periksa group masing-masing user.`,
+    `2. Tampilkan UID, GID, dan group masing-masing user.`,
+    `3. Periksa entri masing-masing user di ${D('/etc/group')}.`,
+    `4. Temukan apakah ada user yang terdaftar pada group yang tidak sesuai dengan unitnya.`),
+   BR('<b>Tahap 4 — Melakukan Manipulasi Izin Akses</b> (Percobaan 3.3.4)',
+    `Buat struktur ${D('/srv/audit_kampus/')} dengan ketentuan berikut (isi setiap file dengan data contoh):`,
+    `${IN}${D('akademik/')}${U('data_mahasiswa.txt')} → ${U('audit_andi')}:${G('audit_akademik')}, 640`,
+    `${IN}${D('keuangan/')}${U('laporan_ukt.txt')} → ${U('audit_bela')}:${G('audit_keuangan')}, 600`,
+    `${IN}${D('laboratorium/')}${U('inventaris_lab.txt')} → ${U('audit_candra')}:${G('audit_lab')}, 640`,
+    `${IN}${D('sistem/')}${U('konfigurasi_server.conf')} → ${U('audit_dimas')}:${G('audit_it')}, 640`,
+    `1. Buat seluruh direktori dan file, isi data contoh, atur owner/group, lalu terapkan permission sesuai daftar.`,
+    `2. Periksa permission dan ownership semua file (long listing).`,
+    `3. Uji baca: ${U('audit_andi')} → data_mahasiswa (berhasil), ${U('audit_bela')} → data_mahasiswa (ditolak), ${U('audit_bela')} → laporan_ukt (berhasil), ${U('audit_dimas')} → konfigurasi_server.conf (berhasil).`,
+    `4. Simulasikan masalah 1: ubah permission direktori ${D('/srv/audit_kampus/sistem')} (misalnya mode 700) lalu uji ${U('kepala_it')} (anggota group ${G('audit_it')}) membaca konfigurasi_server.conf sampai ditolak. Temukan penyebabnya dengan ${C('ls -ld')} dan perbaiki permission direktori tanpa memberi akses berlebihan (bukan 777).`,
+    `5. Simulasikan masalah 2: ubah permission laporan_ukt.txt menjadi terlalu terbuka (misalnya 644), buktikan ${U('audit_andi')} dapat membacanya, lalu perbaiki agar hanya pemilik yang dapat membaca dan menulis.`,
+    `6. Ulangi pemeriksaan (long listing semua file dan ${C('ls -ld')} direktori sistem) dan pengujian: ${U('kepala_it')} → konfigurasi_server.conf (berhasil), ${U('audit_andi')} → laporan_ukt (ditolak). Buat kesimpulan audit, lalu kembali ke sesi ${U('root')}.`)
+  ],
+  hints:[
+   BR(`• Gunakan ${C('groupadd')}.`,
+      `• Gunakan ${C('getent group')}.`,
+      `• Gunakan ${C('grep')} pada ${C('/etc/group')} untuk pencarian spesifik.`),
+   BR(`• Gunakan ${C('useradd -m -G group username')}.`,
+      `• Gunakan ${C('passwd username')}.`,
+      `• Pastikan group telah dibuat pada Tahap 1.`),
+   BR(`• Gunakan ${C('groups username')}.`,
+      `• Gunakan ${C('id username')}.`,
+      `• Gunakan ${C('grep username /etc/group')}.`,
+      `• Bandingkan hasil dengan daftar penugasan user.`),
+   BR(`• Gunakan ${C('mkdir -p')}, ${C('touch')}, ${C('echo')}, ${C('chown')}, ${C('chmod')}, dan ${C('ls -l')}.`,
+      `• Permission 640 berarti owner rw-, group r--, others ---. Permission 600 berarti owner rw-, group ---, others ---.`,
+      `• Gunakan ${C('ls -ld')} untuk memeriksa permission direktori.`,
+      `• Direktori membutuhkan permission x agar pengguna dapat menelusurinya.`,
+      `• Gunakan ${C('su - username')} untuk berpindah akun dan ${C('cat file')} untuk menguji baca.`,
+      `• Jangan menggunakan ${C('chmod 777')} sebagai solusi.`,
+      `• Setelah perbaikan, ulangi pengujian dengan akun yang sama agar hasil sebelum dan sesudah dapat dibandingkan.`)
+  ]
  }
 ];
 const TOTAL=levels.length;
@@ -629,7 +694,16 @@ const TREES=[
   '/srv/sia/',
   '├── akademik/data_mahasiswa.txt  operator_sia:sia_akademik  rw- r-- ---',
   '├── aplikasi/config_sia.conf     developer1:sia_developer   rw- r-- ---',
-  '└── database/backup_sia.sql      dba1:sia_database          rw- --- ---']
+  '└── database/backup_sia.sql      dba1:sia_database          rw- --- ---'],
+ ['KONTEKS: AUDIT AKSES SERVER KAMPUS',
+  'Group : audit_akademik | audit_keuangan | audit_lab | audit_it',
+  'User  : audit_andi, audit_bela, audit_candra, audit_dimas, kepala_it',
+  '        (audit_dimas dan kepala_it -> audit_it)',
+  '/srv/audit_kampus/',
+  '├── akademik/data_mahasiswa.txt          audit_andi:audit_akademik   640',
+  '├── keuangan/laporan_ukt.txt             audit_bela:audit_keuangan   600',
+  '├── laboratorium/inventaris_lab.txt      audit_candra:audit_lab      640',
+  '└── sistem/konfigurasi_server.conf       audit_dimas:audit_it        640']
 ];
 
 const el=id=>document.getElementById(id);
@@ -832,6 +906,9 @@ function statuses(){
  const K2='/home/rani/kegiatan',F2a=K2+'/daftar_peserta.txt',F2b=K2+'/panduan_sistem.txt',U2=['rani','tono','wawan','yuni'];
  // --- Level 3 ---
  const R3='/srv/sia',D3=R3+'/akademik/data_mahasiswa.txt',C3=R3+'/aplikasi/config_sia.conf',B3=R3+'/database/backup_sia.sql',U3=['admin_sia','operator_sia','developer1','dba1'];
+ // --- Level 4 ---
+ const R4='/srv/audit_kampus',DM=R4+'/akademik/data_mahasiswa.txt',LU=R4+'/keuangan/laporan_ukt.txt',IL=R4+'/laboratorium/inventaris_lab.txt',KS=R4+'/sistem/konfigurasi_server.conf',U4=['audit_andi','audit_bela','audit_candra','audit_dimas','kepala_it'];
+
  return [
   [ // LEVEL 1
    ver('akademik')&&ver('it_support'),
@@ -863,6 +940,21 @@ function statuses(){
     rd('dba1',C3)==='denied'&&rd('dba1',B3)==='ok'&&rd('dba2',B3)==='denied'&&
     reach('staf_sia',D3)&&!reach('developer1',D3)&&reach('developer1',C3)&&
     !reach('dba1',C3)&&reach('dba1',B3)&&!reach('dba2',B3)&&root
+  ],
+  [ // LEVEL 4
+   ['audit_akademik','audit_keuangan','audit_lab','audit_it'].every(ver),
+   member('audit_andi','audit_akademik')&&member('audit_bela','audit_keuangan')&&member('audit_candra','audit_lab')&&
+    member('audit_dimas','audit_it')&&member('kepala_it','audit_it'),
+   all('groups',U4)&&all('id',U4)&&all('gr',U4),
+   ['akademik','keuangan','laboratorium','sistem'].every(d=>dirOk(R4+'/'+d)&&noOtherWrite(R4+'/'+d))&&
+    fileOk(DM,'audit_andi','audit_akademik',0o640)&&fileOk(LU,'audit_bela','audit_keuangan',0o600)&&
+    fileOk(IL,'audit_candra','audit_lab',0o640)&&fileOk(KS,'audit_dimas','audit_it',0o640)&&
+    listed(DM)&&listed(LU)&&listed(IL)&&listed(KS)&&listed(R4+'/sistem')&&
+    rd('audit_andi',DM)==='ok'&&rd('audit_bela',DM)==='denied'&&rd('audit_bela',LU)==='ok'&&rd('audit_dimas',KS)==='ok'&&
+    !!A['d|kepala_it|'+KS]&&rd('kepala_it',KS)==='ok'&&
+    !!A['k|audit_andi|'+LU]&&rd('audit_andi',LU)==='denied'&&
+    reach('audit_andi',DM)&&!reach('audit_bela',DM)&&reach('audit_bela',LU)&&!reach('audit_andi',LU)&&
+    reach('audit_dimas',KS)&&reach('kepala_it',KS)&&root
   ]
  ].map(x=>x.map(Boolean));
 }
